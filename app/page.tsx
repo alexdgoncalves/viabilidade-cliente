@@ -1,65 +1,119 @@
-import Image from "next/image";
+﻿'use client';
 
-export default function Home() {
+import { useRouter } from "next/navigation";
+import SearchClient from "@/components/pre-analise/search-client";
+import BureauCard from "@/components/pre-analise/bureau-card";
+import FaturamentoCard from "@/components/pre-analise/faturamento-card";
+import BomPagadorCard from "@/components/pre-analise/bom-pagador-card";
+import LoanSuggestion from "@/components/pre-analise/loan-suggestion";
+import TopNav from "@/components/layout/top-nav";
+import ThemeToggle from "@/components/theme-toggle";
+import { useEligibility } from "@/context/eligibility-context";
+import { useTheme } from "@/context/theme-context";
+import { useProcess } from "@/context/process-context";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useValidation } from "@/context/validation-context";
+
+export default function Page() {
+  const router = useRouter();
+  const { theme } = useTheme();
+  const { eligibility, clear: clearEligibility } = useEligibility();
+  const { clear: clearValidation } = useValidation();
+  const { finalizado, decisao, observacoes, resetar } = useProcess();
+
+  const mainClass =
+    theme === "dark"
+      ? "bg-slate-950 text-slate-100"
+      : "bg-slate-100 text-slate-900";
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+    <main className={`min-h-screen transition-colors ${mainClass}`}>
+      <TopNav
+        title="Pre-analise de Credito"
+        description="Consulte Bureau, Faturamento e Bom Pagador para validar a elegibilidade."
+        stage="etapa 1 - pre-analise"
+        rightSlot={
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+          </div>
+        }
+      />
+
+      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-6">
+        {finalizado ? (
+          <Alert variant="success" className="flex flex-col gap-2">
+            <div>
+              <AlertTitle>Processo finalizado</AlertTitle>
+              <AlertDescription>
+                Decisao registrada: {decisao ?? "indefinida"}.
+                {observacoes ? ` Observacoes: ${observacoes}` : ""}
+              </AlertDescription>
+            </div>
+            <div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  resetar();
+                  clearValidation();
+                  clearEligibility();
+                }}
+              >
+                Reabrir processo
+              </Button>
+            </div>
+          </Alert>
+        ) : null}
+        <SearchClient />
+
+        {eligibility ? (
+          <>
+            <div className="grid gap-4 md:grid-cols-3">
+              <BureauCard bureau={eligibility.bureau} />
+              <FaturamentoCard faturamento={eligibility.faturamento} />
+              <BomPagadorCard bomPagador={eligibility.bomPagador} />
+            </div>
+            <LoanSuggestion
+              bureau={eligibility.bureau}
+              faturamento={eligibility.faturamento}
+              bomPagador={eligibility.bomPagador}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+            {eligibility.aprovado ? (
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--border-color)] bg-[var(--surface-elevated)] p-4">
+                <div>
+                  <h2 className="text-sm font-semibold text-primary">
+                    Cliente elegivel
+                  </h2>
+                  <p className="text-xs text-muted">
+                    Avance para a etapa de validacao de notas fiscais para continuar o fluxo.
+                  </p>
+                </div>
+                <Button onClick={() => router.push("/validacao")}>
+                  Ir para validacao
+                </Button>
+              </div>
+            ) : (
+              <Alert variant="warning">
+                <AlertTitle>Cliente nao elegivel</AlertTitle>
+                <AlertDescription>
+                  Ajuste os dados na pre-analise para que o cliente atinja os criterios antes de prosseguir para a validacao de notas.
+                </AlertDescription>
+              </Alert>
+            )}
+          </>
+        ) : (
+          <p className="text-sm text-muted">
+            Realize uma consulta para visualizar os dados consolidados do cliente.
+          </p>
+        )}
+      </div>
+    </main>
   );
 }
+
+
+
+
+
+

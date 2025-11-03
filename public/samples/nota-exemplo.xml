@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Notas>
+  <Nota>
+    <chave>35241234567890000190550010000000012345678901</chave>
+    <valor>18450.00</valor>
+    <data>2025-01-10</data>
+  </Nota>
+  <Nota>
+    <chave>35241234567890000190550010000000012345678902</chave>
+    <valor>9800.00</valor>
+    <data>2025-01-11</data>
+  </Nota>
+  <Nota>
+    <chave>35241234567890000190550010000000012345678903</chave>
+    <valor>12300.00</valor>
+    <data>2025-01-12</data>
+  </Nota>
+</Notas>
